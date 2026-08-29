@@ -52,6 +52,10 @@
         <label class="search-box"><span class="sr-only">Search audio files</span><input id="file-search" type="search" placeholder="Search files…" autocomplete="off"></label>
         <label class="sort-picker"><span class="sr-only">Sort audio files</span><select id="file-sort"><option value="name">Sort: Name</option><option value="modified-desc">Sort: Last edited (newest)</option><option value="modified-asc">Sort: Last edited (oldest)</option></select></label>
         <button id="mark-mode" class="button mark-mode-button" type="button" aria-pressed="false">MARK MODE</button>
+        <div class="mark-actions" aria-label="Bulk marking actions">
+          <button id="mark-visible" class="button compact-button" type="button" title="Mark every file currently shown">Mark visible</button>
+          <button id="clear-visible" class="button compact-button" type="button" title="Clear marks from every file currently shown">Clear visible</button>
+        </div>
         <div id="file-list" class="file-list empty-state">Choose a folder to see common audio files.</div>
       </aside>
       <div id="workspace-splitter" class="workspace-splitter" role="separator" aria-label="Resize audio library" tabindex="0"></div>

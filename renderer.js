@@ -14,6 +14,8 @@ const savedCount = $('saved-count');
 const fileSearch = $('file-search');
 const fileSort = $('file-sort');
 const markModeButton = $('mark-mode');
+const markVisibleButton = $('mark-visible');
+const clearVisibleButton = $('clear-visible');
 const quickModeToggle = $('quick-mode-toggle');
 const autoSaveToggle = $('auto-save-toggle');
 const autoSaveToggleWrap = $('auto-save-toggle-wrap');
@@ -533,12 +535,19 @@ function sortFiles() {
   });
 }
 
+function getVisibleFiles() {
+  const query = fileSearch.value.trim().toLocaleLowerCase();
+  return query ? files.filter((file) => file.relativePath.toLocaleLowerCase().includes(query)) : files;
+}
+
 function renderFiles() {
   const query = fileSearch.value.trim().toLocaleLowerCase();
-  const visibleFiles = query ? files.filter((file) => file.relativePath.toLocaleLowerCase().includes(query)) : files;
+  const visibleFiles = getVisibleFiles();
   const overwrittenCount = files.reduce((count, file) => count + (savedFiles.has(file.path) ? 1 : 0), 0);
   fileCount.textContent = query ? `${visibleFiles.length}/${files.length}` : files.length;
   savedCount.textContent = `${overwrittenCount}/${files.length}`;
+  markVisibleButton.disabled = !visibleFiles.length;
+  clearVisibleButton.disabled = !visibleFiles.length;
   fileList.replaceChildren();
   if (!visibleFiles.length) {
     fileList.className = 'file-list empty-state';
@@ -1371,6 +1380,20 @@ fileSort.addEventListener('change', () => {
   sortFiles();
   writeState({ sortMode });
   renderFiles();
+});
+markVisibleButton.addEventListener('click', () => {
+  const visibleFiles = getVisibleFiles();
+  visibleFiles.forEach((file) => savedFiles.add(file.path));
+  persistSavedFiles();
+  renderFiles();
+  showMessage(`Marked ${visibleFiles.length} visible file${visibleFiles.length === 1 ? '' : 's'}.`, 'success');
+});
+clearVisibleButton.addEventListener('click', () => {
+  const visibleFiles = getVisibleFiles();
+  visibleFiles.forEach((file) => savedFiles.delete(file.path));
+  persistSavedFiles();
+  renderFiles();
+  showMessage(`Cleared marks from ${visibleFiles.length} visible file${visibleFiles.length === 1 ? '' : 's'}.`, 'success');
 });
 markModeButton.addEventListener('click', () => {
   markMode = !markMode;
