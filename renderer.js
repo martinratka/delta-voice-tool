@@ -2,6 +2,8 @@ const $ = (id) => document.getElementById(id);
 
 const chooseFolderButton = $('choose-folder');
 const checkUpdatesButton = $('check-updates');
+const backgroundImageInput = $('background-image');
+const clearBackgroundButton = $('clear-background');
 const recursiveToggle = $('recursive-toggle');
 const microphoneSelect = $('microphone');
 const themeSelect = $('theme-select');
@@ -64,6 +66,7 @@ const updateSkipButton = $('update-skip');
 
 const SUPPORTED_EXTENSIONS = new Set(['wav', 'mp3', 'ogg', 'flac', 'm4a', 'aac', 'opus', 'aiff', 'aif', 'wma']);
 const stateKey = 'delta-voice-state';
+const backgroundStateKey = 'delta-voice-background';
 const RULER_HEIGHT = 42;
 const LANE_HEIGHT = 106;
 const BASE_PIXELS_PER_SECOND = 96;
@@ -173,6 +176,16 @@ function applyTheme(theme) {
   document.documentElement.dataset.theme = selectedTheme;
   themeSelect.value = selectedTheme;
   localStorage.setItem('delta-voice-theme', selectedTheme);
+}
+
+function applyBackgroundImage(dataUrl) {
+  if (dataUrl) {
+    document.body.style.backgroundImage = `linear-gradient(#0008, #0008), url("${dataUrl}")`;
+    clearBackgroundButton.hidden = false;
+  } else {
+    document.body.style.backgroundImage = '';
+    clearBackgroundButton.hidden = true;
+  }
 }
 
 function showMessage(text, type = '') {
@@ -1343,6 +1356,33 @@ audioPlayer.addEventListener('ended', () => { playheadTime = 0; stopPlayhead(); 
 audioPlayer.addEventListener('timeupdate', () => { playheadTime = audioPlayer.currentTime; currentTimeLabel.textContent = formatTime(playheadTime); });
 audioPlayer.addEventListener('loadedmetadata', () => { durationLabel.textContent = formatTime(timelineDuration()); });
 themeSelect.addEventListener('change', () => applyTheme(themeSelect.value));
+backgroundImageInput.addEventListener('change', () => {
+  const [file] = backgroundImageInput.files;
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener('load', () => {
+    if (typeof reader.result !== 'string') {
+      showMessage('Could not load that background image.', 'error');
+      return;
+    }
+    try {
+      localStorage.setItem(backgroundStateKey, reader.result);
+      applyBackgroundImage(reader.result);
+      showMessage('Background image applied.', 'success');
+    } catch (error) {
+      showMessage('That image is too large to save as a background. Choose a smaller image.', 'error');
+      console.warn('Could not persist background image:', error);
+    }
+  }, { once: true });
+  reader.addEventListener('error', () => showMessage('Could not load that background image.', 'error'), { once: true });
+  reader.readAsDataURL(file);
+});
+clearBackgroundButton.addEventListener('click', () => {
+  localStorage.removeItem(backgroundStateKey);
+  backgroundImageInput.value = '';
+  applyBackgroundImage('');
+  showMessage('Custom background removed.', 'success');
+});
 workspaceSplitter.addEventListener('pointerdown', (event) => {
   if (window.matchMedia('(max-width: 980px)').matches) return;
   workspaceSplitter.setPointerCapture(event.pointerId);
@@ -1455,6 +1495,7 @@ window.addEventListener('keyup', (event) => {
 
 drawTimeline();
 applyTheme(localStorage.getItem('delta-voice-theme') || 'midnight');
+applyBackgroundImage(localStorage.getItem(backgroundStateKey) || '');
 const previousState = readState();
 recursiveToggle.checked = previousState.recursive === true;
 sortMode = ['name', 'modified-desc', 'modified-asc'].includes(previousState.sortMode) ? previousState.sortMode : 'name';

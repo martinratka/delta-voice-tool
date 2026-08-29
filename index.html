@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; media-src 'self' blob:; connect-src 'self' blob:">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob:">
   <title>Delta Voice Tool</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -13,12 +13,14 @@
       <div class="brand">
         <div class="brand-mark">Δ</div>
         <div>
-          <p class="eyebrow">VOICE EDITOR · 1.6.1</p>
+          <p class="eyebrow">VOICE EDITOR · 1.7 BETA</p>
           <h1>Delta Voice Tool</h1>
         </div>
       </div>
       <div class="header-actions">
         <button id="check-updates" class="button">Check for updates</button>
+        <label class="button background-button">Background image<input id="background-image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label>
+        <button id="clear-background" class="button" type="button" hidden>Clear background</button>
         <button id="choose-folder" class="button primary">Choose folder</button>
       </div>
     </header>
