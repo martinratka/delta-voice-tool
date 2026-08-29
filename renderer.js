@@ -579,7 +579,6 @@ function renderFiles() {
       markDrag = { target: !savedFiles.has(file.path), moved: false };
       markAnchorPath = file.path;
       updateMarkedItem(button, file, markDrag.target);
-      event.preventDefault();
     });
     button.addEventListener('pointerenter', () => {
       if (!markMode || !markDrag) return;
