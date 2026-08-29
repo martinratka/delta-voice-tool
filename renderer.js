@@ -82,6 +82,7 @@ let sortMode = 'name';
 let markMode = false;
 let markDrag = null;
 let suppressMarkClick = false;
+let markAnchorPath = null;
 let selectedFile = null;
 const savedFiles = new Set();
 let recording = null;
@@ -576,6 +577,7 @@ function renderFiles() {
     button.addEventListener('pointerdown', (event) => {
       if (!markMode || event.button !== 0) return;
       markDrag = { target: !savedFiles.has(file.path), moved: false };
+      markAnchorPath = file.path;
       updateMarkedItem(button, file, markDrag.target);
       event.preventDefault();
     });
@@ -584,14 +586,24 @@ function renderFiles() {
       markDrag.moved = true;
       updateMarkedItem(button, file, markDrag.target);
     });
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (event) => {
       if (markMode && suppressMarkClick) {
         suppressMarkClick = false;
         return;
       }
       if (markMode) {
-        updateMarkedItem(button, file, !savedFiles.has(file.path));
+        const anchorIndex = getVisibleFiles().findIndex((item) => item.path === markAnchorPath);
+        const currentIndex = getVisibleFiles().findIndex((item) => item.path === file.path);
+        if (event.shiftKey && anchorIndex >= 0 && currentIndex >= 0) {
+          const start = Math.min(anchorIndex, currentIndex);
+          const end = Math.max(anchorIndex, currentIndex);
+          getVisibleFiles().slice(start, end + 1).forEach((item) => savedFiles.add(item.path));
+        } else {
+          updateMarkedItem(button, file, !savedFiles.has(file.path));
+        }
+        markAnchorPath = file.path;
         persistSavedFiles();
+        renderFiles();
         return;
       }
       if (markMode) return;
@@ -1404,7 +1416,10 @@ markModeButton.addEventListener('click', () => {
   markMode = !markMode;
   markModeButton.classList.toggle('active', markMode);
   markModeButton.setAttribute('aria-pressed', String(markMode));
-  if (!markMode) markDrag = null;
+  if (!markMode) {
+    markDrag = null;
+    markAnchorPath = null;
+  }
 });
 document.addEventListener('pointerup', () => {
   if (!markDrag) return;
