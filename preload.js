@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 const invoke = (channel, payload) => ipcRenderer.invoke(channel, payload);
+const listen = (channel, callback) => ipcRenderer.on(channel, (_event, payload) => callback(payload));
 
 contextBridge.exposeInMainWorld('voiceTakes', Object.freeze({
   selectFolder: () => invoke('select-folder'),
@@ -11,5 +12,11 @@ contextBridge.exposeInMainWorld('voiceTakes', Object.freeze({
   saveRecordingTemp: (data, extension) => invoke('save-recording-temp', { data, extension }),
   discardRecordingTemp: (tempPath) => invoke('discard-recording-temp', { tempPath }),
   saveTake: (sourcePath, tempPath) => invoke('save-take', { sourcePath, tempPath }),
-  checkForUpdates: () => invoke('check-for-updates')
+  checkForUpdates: () => invoke('check-for-updates'),
+  downloadUpdate: () => invoke('download-update'),
+  installUpdate: () => invoke('install-update'),
+  onUpdateAvailable: (callback) => listen('update-available', callback),
+  onUpdateProgress: (callback) => listen('update-progress', callback),
+  onUpdateDownloaded: (callback) => listen('update-downloaded', callback),
+  onUpdateError: (callback) => listen('update-error', callback)
 }));

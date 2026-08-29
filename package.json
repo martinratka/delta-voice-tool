@@ -1,6 +1,6 @@
 {
   "name": "delta-voice-tool",
-  "version": "1.6.0",
+  "version": "1.6.1-beta.1",
   "description": "A small cross-platform desktop app for replacing voice takes quickly.",
   "author": "Delta Voice Tool",
   "main": "main.js",

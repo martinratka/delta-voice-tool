@@ -55,6 +55,12 @@ const takeHistoryList = $('take-history-list');
 const statusText = $('status-text');
 const statusDot = $('status-dot');
 const message = $('message');
+const updateModal = $('update-modal');
+const updateMessage = $('update-message');
+const updateProgress = $('update-progress');
+const updateProgressLabel = $('update-progress-label');
+const updateInstallButton = $('update-install');
+const updateSkipButton = $('update-skip');
 
 const SUPPORTED_EXTENSIONS = new Set(['wav', 'mp3', 'ogg', 'flac', 'm4a', 'aac', 'opus', 'aiff', 'aif', 'wma']);
 const stateKey = 'delta-voice-state';
@@ -1282,6 +1288,45 @@ checkUpdatesButton.addEventListener('click', async () => {
   } finally {
     checkUpdatesButton.disabled = false;
   }
+});
+window.voiceTakes.onUpdateAvailable(({ version }) => {
+  updateMessage.textContent = `Version ${version} is available. Install it now?`;
+  updateProgress.style.width = '0%';
+  updateProgressLabel.textContent = 'Ready to download';
+  updateInstallButton.hidden = false;
+  updateSkipButton.hidden = false;
+  updateInstallButton.disabled = false;
+  updateModal.hidden = false;
+});
+updateInstallButton.addEventListener('click', async () => {
+  updateInstallButton.disabled = true;
+  updateSkipButton.hidden = true;
+  updateMessage.textContent = 'Downloading update…';
+  updateProgressLabel.textContent = 'Starting download…';
+  try {
+    await window.voiceTakes.downloadUpdate();
+  } catch (error) {
+    updateInstallButton.disabled = false;
+    updateSkipButton.hidden = false;
+    updateMessage.textContent = error.message || 'The update could not be downloaded.';
+  }
+});
+updateSkipButton.addEventListener('click', () => { updateModal.hidden = true; });
+window.voiceTakes.onUpdateProgress(({ percent }) => {
+  updateProgress.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+  updateProgressLabel.textContent = `Downloading… ${Math.round(percent)}%`;
+});
+window.voiceTakes.onUpdateDownloaded(() => {
+  updateProgress.style.width = '100%';
+  updateProgressLabel.textContent = 'Download complete';
+  updateMessage.textContent = 'Successfully updated. Restarting…';
+  updateInstallButton.hidden = true;
+  setTimeout(() => window.voiceTakes.installUpdate(), 900);
+});
+window.voiceTakes.onUpdateError(({ message: errorMessage }) => {
+  updateMessage.textContent = errorMessage || 'The update could not be completed.';
+  updateInstallButton.disabled = false;
+  updateSkipButton.hidden = false;
 });
 recursiveToggle.addEventListener('change', () => { writeState({ recursive: recursiveToggle.checked }); refreshFiles(); });
 fileSearch.addEventListener('input', () => { renderFiles(); writeState({ search: fileSearch.value }); });

@@ -13,7 +13,7 @@
       <div class="brand">
         <div class="brand-mark">Δ</div>
         <div>
-          <p class="eyebrow">VOICE EDITOR · 1.6</p>
+          <p class="eyebrow">VOICE EDITOR · 1.6.1 BETA</p>
           <h1>Delta Voice Tool</h1>
         </div>
       </div>
@@ -96,6 +96,20 @@
         <audio id="audio-player" controls preload="metadata"></audio>
       </section>
     </section>
+
+    <div id="update-modal" class="update-modal" hidden>
+      <section class="update-dialog panel" role="dialog" aria-modal="true" aria-labelledby="update-title">
+        <span class="muted">DELTA VOICE TOOL</span>
+        <h2 id="update-title">Update found</h2>
+        <p id="update-message">A new version is ready to download.</p>
+        <div class="update-progress-track"><div id="update-progress" class="update-progress"></div></div>
+        <p id="update-progress-label" class="update-progress-label">Ready to download</p>
+        <div class="update-actions">
+          <button id="update-install" class="button primary" type="button">Install update</button>
+          <button id="update-skip" class="button" type="button">Skip</button>
+        </div>
+      </section>
+    </div>
 
     <footer><span>Shortcuts: <kbd>Space</kbd> play · <kbd>R</kbd> record · <kbd>S</kbd> stop · <kbd>X</kbd> split · <kbd>⌘/Ctrl+Z</kbd> undo · <kbd>⌘/Ctrl+Shift+Z</kbd> redo</span><span id="ffmpeg-note">Exports preserve the selected file's format.</span></footer>
   </main>

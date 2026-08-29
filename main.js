@@ -26,7 +26,6 @@ const MIME_TYPES = {
 let mainWindow;
 let activeFolder = null;
 let temporaryDirectory;
-let updatePromptOpen = false;
 let updateAvailableVersion = null;
 
 autoUpdater.autoDownload = false;
@@ -39,42 +38,26 @@ function checkForUpdates() {
   });
 }
 
-autoUpdater.on('update-available', async (info) => {
+function sendUpdateEvent(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
+}
+
+autoUpdater.on('update-available', (info) => {
   updateAvailableVersion = info.version;
-  if (updatePromptOpen) return;
-  updatePromptOpen = true;
-  try {
-    const result = await dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      buttons: ['Install update', 'Skip'],
-      defaultId: 0,
-      cancelId: 1,
-      title: 'Update found',
-      message: 'Update found',
-      detail: `Delta Voice Tool ${info.version} is available. Install it now?`
-    });
-    if (result.response === 0) {
-      await autoUpdater.downloadUpdate();
-      const installResult = await dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        buttons: ['Restart and install', 'Later'],
-        defaultId: 0,
-        cancelId: 1,
-        title: 'Update ready',
-        message: 'Update downloaded',
-        detail: 'Restart Delta Voice Tool to finish installing the update.'
-      });
-      if (installResult.response === 0) autoUpdater.quitAndInstall();
-    }
-  } catch (error) {
-    console.warn('Could not install update:', error.message);
-  } finally {
-    updatePromptOpen = false;
-  }
+  sendUpdateEvent('update-available', { version: info.version });
+});
+
+autoUpdater.on('download-progress', (progress) => {
+  sendUpdateEvent('update-progress', { percent: progress.percent, transferred: progress.transferred, total: progress.total });
+});
+
+autoUpdater.on('update-downloaded', () => {
+  sendUpdateEvent('update-downloaded');
 });
 
 autoUpdater.on('error', (error) => {
   console.warn('Update check failed:', error.message);
+  sendUpdateEvent('update-error', { message: error.message });
 });
 
 function isWithin(child, parent) {
@@ -184,6 +167,13 @@ function registerIpc() {
     updateAvailableVersion = null;
     await autoUpdater.checkForUpdates();
     return { available: Boolean(updateAvailableVersion), version: updateAvailableVersion };
+  });
+  ipcMain.handle('download-update', async () => {
+    if (!app.isPackaged) return;
+    await autoUpdater.downloadUpdate();
+  });
+  ipcMain.handle('install-update', () => {
+    if (app.isPackaged) autoUpdater.quitAndInstall();
   });
 
   ipcMain.handle('select-folder', async () => {
