@@ -13,6 +13,7 @@ const fileCount = $('file-count');
 const savedCount = $('saved-count');
 const fileSearch = $('file-search');
 const fileSort = $('file-sort');
+const markModeButton = $('mark-mode');
 const quickModeToggle = $('quick-mode-toggle');
 const autoSaveToggle = $('auto-save-toggle');
 const autoSaveToggleWrap = $('auto-save-toggle-wrap');
@@ -78,6 +79,7 @@ const MAX_ZOOM = 8;
 let activeFolder = null;
 let files = [];
 let sortMode = 'name';
+let markMode = false;
 let selectedFile = null;
 const savedFiles = new Set();
 let recording = null;
@@ -557,7 +559,16 @@ function renderFiles() {
     format.className = 'file-format';
     format.textContent = file.format;
     button.append(name, format);
-    button.addEventListener('click', () => selectFile(file));
+    button.addEventListener('click', () => {
+      if (markMode) {
+        if (savedFiles.has(file.path)) savedFiles.delete(file.path);
+        else savedFiles.add(file.path);
+        persistSavedFiles();
+        renderFiles();
+        return;
+      }
+      selectFile(file);
+    });
     fileList.append(button);
   });
 }
@@ -1360,6 +1371,11 @@ fileSort.addEventListener('change', () => {
   sortFiles();
   writeState({ sortMode });
   renderFiles();
+});
+markModeButton.addEventListener('click', () => {
+  markMode = !markMode;
+  markModeButton.classList.toggle('active', markMode);
+  markModeButton.setAttribute('aria-pressed', String(markMode));
 });
 timelineScroll.addEventListener('scroll', () => { persistProject(); });
 audioPlayer.addEventListener('play', () => { playButton.querySelector('span').textContent = 'Pause'; updatePlayhead(); });
