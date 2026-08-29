@@ -13,6 +13,8 @@ Delta Voice Tool is a desktop voice-take editor for quickly recording, reviewing
 
 The Windows installer includes FFmpeg and does not require Node.js or any other separate dependency. Installed copies check for new releases whenever they start and offer to install updates when available.
 
+**The installer is recommended.** The portable executable does not install desktop shortcuts and cannot update itself as reliably, so portable users should download and replace it manually when a new release is published.
+
 ### Linux / Omarchy
 
 Clone the repository once:
