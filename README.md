@@ -1,43 +1,46 @@
-# Delta Voice Tool 1.2.1
+# Delta Voice Tool
 
-Delta Voice Tool is a focused Electron DAW-style editor for replacing voice takes without changing filenames or formats. The original file stays untouched until an explicit **Save take** confirmation.
+Delta Voice Tool is a desktop voice-take editor for quickly recording, reviewing, editing, and replacing audio files without changing their filenames or formats.
 
-## Run
+## Download and run
+
+### Windows
+
+1. Open the [Releases page](https://github.com/martinratka/delta-voice-tool/releases).
+2. Download the file ending in `-x64.exe`.
+3. Run the installer and follow the prompts.
+4. Launch Delta Voice Tool from the desktop shortcut or Start Menu.
+
+The Windows installer includes FFmpeg and does not require Node.js or any other separate dependency. Installed copies check for new releases whenever they start and offer to install updates when available.
+
+### Linux / Omarchy
+
+Clone the repository once:
 
 ```bash
+git clone https://github.com/martinratka/delta-voice-tool.git
+cd delta-voice-tool
 npm install
 npm start
 ```
 
-Choose a folder, select an audio file, choose a microphone, and use the single timeline to arrange clips or record a take. WAV, MP3, OGG, FLAC, M4A, AAC, Opus, AIFF, and WMA are recognized. Folder search, recursive scanning, green saved states, themes, microphone selection, drag/drop, and project persistence are retained.
+For later updates:
 
-## Timeline workflow
+```bash
+cd delta-voice-tool
+git pull
+npm start
+```
 
-- The source, latest recorded take, and dropped audio files are all timeline layers. Drop one or more audio files onto the timeline; each becomes its own lane.
-- Drag any clip body to move it. Drag either edge to trim. Selected clips expose start, trim, fade, volume, mute, solo, and remove controls.
-- Click a lane's **M** or **S** buttons for mute/solo. Mute the source lane when you want a replacement-style export. A selected clip can be split at the playhead with **Split at playhead** or `X`.
-- Recording grows as a live Audacity-style clip in the TAKE lane. When stopped, it becomes a normal editable clip with the same controls as every other layer.
-- Use **Snap** for 50 ms grid movement, `+`/`−` for waveform zoom, and **Fit** to show the complete arrangement. The timeline scrolls horizontally at higher zoom levels.
-- Take history keeps prior recordings available during the session. Older metadata is restored safely, but large audio buffers are never placed in localStorage.
+You can also download the Linux AppImage from Releases, mark it executable, and run it directly.
 
-Preview rendering uses `OfflineAudioContext`; exports are converted with the bundled ffmpeg and preserve the selected source extension/format.
+## Basic workflow
 
-## Shortcuts
+Choose an audio folder, select a file, and record or drop audio into the timeline. Clips can be moved, trimmed, faded, split, and adjusted for volume. Save overwrites the selected file while preserving its original extension.
 
-- `Space`: play/pause
-- `R`: record
-- `S`: stop
-- `X`: split selected clip at playhead
-- `Left` / `Right`: move playhead by 100 ms (`Shift` = 1 second)
-- `Delete` / `Backspace`: remove selected clip
-- `Ctrl/Cmd+Z`: undo
-- `Ctrl/Cmd+Shift+Z`: redo
-- `Ctrl/Cmd+Shift+R`: record another take
-- `Ctrl/Cmd+S`: save (asks before overwriting)
+Quick Mode starts recording while `R` is held and stops when it is released. Auto Save can be enabled inside Quick Mode to save each completed take and advance to the next file automatically.
 
-## Build Windows packages
-
-On Windows, or from a machine configured for Windows targets:
+## Build
 
 ```bash
 npm install
@@ -45,8 +48,8 @@ npm run smoke
 npm run dist:win
 ```
 
-The `dist` folder contains an NSIS installer and portable executable named `Delta Voice Tool-1.2.1-*.exe`. The package includes `resources/ffmpeg.exe`, so users do not need Node.js or ffmpeg installed.
+The Windows builds are written to `dist/`. The installer is recommended because it creates shortcuts and supports automatic updates; the portable executable is intended for manual or temporary use.
 
-## Notes
+## Supported audio
 
-Microphone permissions are controlled by the operating system. Folder scanning is top-level unless **Include subfolders** is enabled. Editor metadata is stored per selected source path; audio buffers remain in memory and temporary takes are discarded after they are saved or the app closes.
+WAV, MP3, OGG, FLAC, M4A, AAC, Opus, AIFF, and WMA.

@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const bundledFfmpeg = require('ffmpeg-static');
+const { autoUpdater } = require('electron-updater');
 
 const SUPPORTED_EXTENSIONS = new Set([
   '.wav', '.mp3', '.ogg', '.flac', '.m4a', '.aac', '.opus', '.aiff', '.aif', '.wma'
@@ -25,6 +26,54 @@ const MIME_TYPES = {
 let mainWindow;
 let activeFolder = null;
 let temporaryDirectory;
+let updatePromptOpen = false;
+
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = false;
+
+function checkForUpdates() {
+  if (!app.isPackaged) return;
+  autoUpdater.checkForUpdates().catch((error) => {
+    console.warn('Could not check for updates:', error.message);
+  });
+}
+
+autoUpdater.on('update-available', async (info) => {
+  if (updatePromptOpen) return;
+  updatePromptOpen = true;
+  try {
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      buttons: ['Install update', 'Skip'],
+      defaultId: 0,
+      cancelId: 1,
+      title: 'Update found',
+      message: 'Update found',
+      detail: `Delta Voice Tool ${info.version} is available. Install it now?`
+    });
+    if (result.response === 0) {
+      await autoUpdater.downloadUpdate();
+      const installResult = await dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        buttons: ['Restart and install', 'Later'],
+        defaultId: 0,
+        cancelId: 1,
+        title: 'Update ready',
+        message: 'Update downloaded',
+        detail: 'Restart Delta Voice Tool to finish installing the update.'
+      });
+      if (installResult.response === 0) autoUpdater.quitAndInstall();
+    }
+  } catch (error) {
+    console.warn('Could not install update:', error.message);
+  } finally {
+    updatePromptOpen = false;
+  }
+});
+
+autoUpdater.on('error', (error) => {
+  console.warn('Update check failed:', error.message);
+});
 
 function isWithin(child, parent) {
   const childPath = path.resolve(child);
@@ -229,6 +278,7 @@ app.whenReady().then(async () => {
   await fsp.mkdir(temporaryDirectory, { recursive: true });
   registerIpc();
   await createWindow();
+  setTimeout(checkForUpdates, 1500);
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
