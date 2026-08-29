@@ -14,6 +14,7 @@ const savedCount = $('saved-count');
 const fileSearch = $('file-search');
 const fileSort = $('file-sort');
 const markModeButton = $('mark-mode');
+const clearAllMarksButton = $('clear-all-marks');
 const quickModeToggle = $('quick-mode-toggle');
 const autoSaveToggle = $('auto-save-toggle');
 const autoSaveToggleWrap = $('auto-save-toggle-wrap');
@@ -65,6 +66,10 @@ const updateProgress = $('update-progress');
 const updateProgressLabel = $('update-progress-label');
 const updateInstallButton = $('update-install');
 const updateSkipButton = $('update-skip');
+const clearMarksModal = $('clear-marks-modal');
+const clearMarksConfirmButton = $('clear-marks-confirm');
+const clearMarksCancelButton = $('clear-marks-cancel');
+const updateNotes = $('update-notes');
 
 const SUPPORTED_EXTENSIONS = new Set(['wav', 'mp3', 'ogg', 'flac', 'm4a', 'aac', 'opus', 'aiff', 'aif', 'wma']);
 const stateKey = 'delta-voice-state';
@@ -539,6 +544,12 @@ function sortFiles() {
 function getVisibleFiles() {
   const query = fileSearch.value.trim().toLocaleLowerCase();
   return query ? files.filter((file) => file.relativePath.toLocaleLowerCase().includes(query)) : files;
+}
+
+function formatReleaseNotes(releaseNotes) {
+  if (typeof releaseNotes === 'string') return releaseNotes.trim();
+  if (!Array.isArray(releaseNotes)) return '';
+  return releaseNotes.map((entry) => typeof entry === 'string' ? entry : entry?.note || entry?.title || '').filter(Boolean).join('\n');
 }
 
 function updateMarkedItem(button, file, marked) {
@@ -1377,8 +1388,11 @@ checkUpdatesButton.addEventListener('click', async () => {
     checkUpdatesButton.disabled = false;
   }
 });
-window.voiceTakes.onUpdateAvailable(({ version }) => {
+window.voiceTakes.onUpdateAvailable(({ version, releaseNotes }) => {
   updateMessage.textContent = `Version ${version} is available. Install it now?`;
+  const notes = formatReleaseNotes(releaseNotes);
+  updateNotes.textContent = notes ? `What's included:\n${notes}` : '';
+  updateNotes.hidden = !notes;
   updateProgress.style.width = '0%';
   updateProgressLabel.textContent = 'Ready to download';
   updateInstallButton.hidden = false;
@@ -1428,10 +1442,20 @@ markModeButton.addEventListener('click', () => {
   markMode = !markMode;
   markModeButton.classList.toggle('active', markMode);
   markModeButton.setAttribute('aria-pressed', String(markMode));
+  clearAllMarksButton.hidden = !markMode;
   if (!markMode) {
     markDrag = null;
     markAnchorPath = null;
   }
+});
+clearAllMarksButton.addEventListener('click', () => { clearMarksModal.hidden = false; });
+clearMarksCancelButton.addEventListener('click', () => { clearMarksModal.hidden = true; });
+clearMarksConfirmButton.addEventListener('click', () => {
+  savedFiles.clear();
+  persistSavedFiles();
+  clearMarksModal.hidden = true;
+  renderFiles();
+  showMessage('All markers in the current folder were cleared.', 'success');
 });
 document.addEventListener('pointerup', () => {
   if (!markDrag) return;

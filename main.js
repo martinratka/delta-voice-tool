@@ -44,7 +44,7 @@ function sendUpdateEvent(channel, payload) {
 
 autoUpdater.on('update-available', (info) => {
   updateAvailableVersion = info.version;
-  sendUpdateEvent('update-available', { version: info.version });
+  sendUpdateEvent('update-available', { version: info.version, releaseNotes: info.releaseNotes || '' });
 });
 
 autoUpdater.on('download-progress', (progress) => {

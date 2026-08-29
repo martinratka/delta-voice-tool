@@ -53,6 +53,7 @@
         <label class="sort-picker"><span class="sr-only">Sort audio files</span><select id="file-sort"><option value="name">Sort: Name</option><option value="modified-desc">Sort: Last edited (newest)</option><option value="modified-asc">Sort: Last edited (oldest)</option></select></label>
         <button id="mark-mode" class="button mark-mode-button" type="button" aria-pressed="false">MARK MODE</button>
         <p class="mark-mode-help">Drag across files, or use Shift-click, to mark a precise range.</p>
+        <button id="clear-all-marks" class="button danger-button clear-all-marks" type="button" hidden>Clear all markers</button>
         <div id="file-list" class="file-list empty-state">Choose a folder to see common audio files.</div>
       </aside>
       <div id="workspace-splitter" class="workspace-splitter" role="separator" aria-label="Resize audio library" tabindex="0"></div>
@@ -111,11 +112,24 @@
         <span class="muted">DELTA VOICE TOOL</span>
         <h2 id="update-title">Update found</h2>
         <p id="update-message">A new version is ready to download.</p>
+        <p id="update-notes" class="update-notes" hidden></p>
         <div class="update-progress-track"><div id="update-progress" class="update-progress"></div></div>
         <p id="update-progress-label" class="update-progress-label">Ready to download</p>
         <div class="update-actions">
           <button id="update-install" class="button primary" type="button">Install update</button>
           <button id="update-skip" class="button" type="button">Skip</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="clear-marks-modal" class="update-modal" hidden>
+      <section class="update-dialog panel" role="dialog" aria-modal="true" aria-labelledby="clear-marks-title">
+        <span class="muted">MARK MODE</span>
+        <h2 id="clear-marks-title">Clear all markers?</h2>
+        <p>This will erase all markers in the current folder. Your audio files will not be changed.</p>
+        <div class="update-actions">
+          <button id="clear-marks-confirm" class="button danger-button" type="button">Clear all</button>
+          <button id="clear-marks-cancel" class="button" type="button">Cancel</button>
         </div>
       </section>
     </div>
