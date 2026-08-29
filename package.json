@@ -1,6 +1,6 @@
 {
   "name": "delta-voice-tool",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "A small cross-platform desktop app for replacing voice takes quickly.",
   "author": "Delta Voice Tool",
   "main": "main.js",
@@ -42,7 +42,7 @@
         "nsis",
         "portable"
       ],
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "Delta-Voice-Tool-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": true,
@@ -52,13 +52,14 @@
       "createStartMenuShortcut": true
     },
     "portable": {
-      "artifactName": "${productName}-${version}-portable.${ext}"
+      "artifactName": "Delta-Voice-Tool-${version}-portable.${ext}"
     },
     "mac": {
       "target": "dmg"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "artifactName": "Delta-Voice-Tool-${version}.${ext}"
       },
     "publish": {
       "provider": "github",
