@@ -36,6 +36,17 @@ npm start
 
 You can also download the Linux AppImage from Releases, mark it executable, and run it directly.
 
+If you use the source version, update it manually whenever you want:
+
+```bash
+cd delta-voice-tool
+git pull
+npm install
+npm start
+```
+
+Restart the app after pulling updates. The AppImage checks for updates automatically when it starts; the Git version updates through `git pull`.
+
 ## Basic workflow
 
 Choose an audio folder, select a file, and record or drop audio into the timeline. Clips can be moved, trimmed, faded, split, and adjusted for volume. Save overwrites the selected file while preserving its original extension.
