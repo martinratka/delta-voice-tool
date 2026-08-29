@@ -20,6 +20,11 @@
       <div class="header-actions">
         <button id="check-updates" class="button">Check for updates</button>
         <label class="button background-button">Background image<input id="background-image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label>
+        <select id="background-fit" class="background-fit" aria-label="Background image layout">
+          <option value="stretch">Stretch background</option>
+          <option value="tile">Tile background</option>
+          <option value="fit">Fit background</option>
+        </select>
         <button id="clear-background" class="button" type="button" hidden>Clear background</button>
         <button id="choose-folder" class="button primary">Choose folder</button>
       </div>
