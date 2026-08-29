@@ -576,6 +576,19 @@ function renderFiles() {
     button.append(name, format);
     button.addEventListener('pointerdown', (event) => {
       if (!markMode || event.button !== 0) return;
+      const visibleFiles = getVisibleFiles();
+      const anchorIndex = visibleFiles.findIndex((item) => item.path === markAnchorPath);
+      const currentIndex = visibleFiles.findIndex((item) => item.path === file.path);
+      if (event.shiftKey && anchorIndex >= 0 && currentIndex >= 0) {
+        const start = Math.min(anchorIndex, currentIndex);
+        const end = Math.max(anchorIndex, currentIndex);
+        visibleFiles.slice(start, end + 1).forEach((item) => savedFiles.add(item.path));
+        markAnchorPath = file.path;
+        persistSavedFiles();
+        markDrag = { target: true, moved: true };
+        renderFiles();
+        return;
+      }
       markDrag = { target: !savedFiles.has(file.path), moved: false };
       markAnchorPath = file.path;
       updateMarkedItem(button, file, markDrag.target);
