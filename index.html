@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; media-src 'self' blob:; connect-src 'self' blob:">
+  <title>Delta Voice Tool</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">Δ</div>
+        <div>
+          <p class="eyebrow">VOICE EDITOR · 1.4</p>
+          <h1>Delta Voice Tool</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="choose-folder" class="button primary">Choose folder</button>
+      </div>
+    </header>
+
+    <section class="toolbar panel">
+      <div class="folder-summary">
+        <span class="muted">Project folder</span>
+        <strong id="folder-name">No folder selected</strong>
+      </div>
+      <label class="toggle"><input id="recursive-toggle" type="checkbox"><span>Include subfolders</span></label>
+      <label class="toggle"><input id="quick-mode-toggle" type="checkbox"><span>Quick Mode (hold R)</span></label>
+      <label id="auto-save-toggle-wrap" class="toggle" hidden><input id="auto-save-toggle" type="checkbox"><span>Auto Save</span></label>
+      <label class="device-picker"><span class="muted">Microphone</span><select id="microphone"><option>Requesting microphone access…</option></select></label>
+      <label class="theme-picker"><span class="muted">Theme</span><select id="theme-select">
+        <option value="midnight">Midnight</option><option value="ocean">Ocean</option><option value="plum">Plum</option><option value="forest">Forest</option><option value="sunset">Sunset</option><option value="synthwave">Synthwave</option><option value="rose">Rose</option><option value="slate">Slate</option><option value="amber">Amber</option><option value="high-contrast">High Contrast</option><option value="light">Light</option>
+      </select></label>
+    </section>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    <section class="workspace">
+      <aside class="file-panel panel">
+        <div class="panel-heading"><div><span class="muted">LIBRARY</span><h2>Audio files</h2></div><div class="count-group"><span id="file-count" class="count">0</span><span id="saved-count" class="count" title="Overwritten files">0/0</span></div></div>
+        <label class="search-box"><span class="sr-only">Search audio files</span><input id="file-search" type="search" placeholder="Search files…" autocomplete="off"></label>
+        <label class="sort-picker"><span class="sr-only">Sort audio files</span><select id="file-sort"><option value="name">Sort: Name</option><option value="modified-desc">Sort: Last edited (newest)</option><option value="modified-asc">Sort: Last edited (oldest)</option></select></label>
+        <div id="file-list" class="file-list empty-state">Choose a folder to see common audio files.</div>
+      </aside>
+      <div id="workspace-splitter" class="workspace-splitter" role="separator" aria-label="Resize audio library" tabindex="0"></div>
+
+      <section class="take-panel panel">
+        <div class="selected-file">
+          <div><span class="muted">SELECTED SOURCE</span><h2 id="selected-name">Nothing selected</h2></div>
+          <span id="selected-format" class="format-badge">—</span>
+        </div>
+
+        <div class="editor-toolbar">
+          <div class="toolbar-title"><span class="muted">ARRANGEMENT</span><strong>Timeline layers</strong></div>
+          <div class="timeline-help">Move, trim, fade, mute, solo, or split any clip directly in the timeline.</div>
+          <div class="toolbar-divider"></div>
+          <button id="undo-button" class="button icon-button" type="button" disabled title="Undo (Ctrl/Cmd+Z)">↶ <span>Undo</span></button>
+          <button id="redo-edit-button" class="button icon-button" type="button" disabled title="Redo (Ctrl/Cmd+Shift+Z)">↷ <span>Redo</span></button>
+        </div>
+
+        <div class="timeline-tools">
+          <div class="transport">
+            <button id="play-button" class="button transport-button" disabled>▶ <span>Play</span><kbd>Space</kbd></button>
+            <button id="stop-button" class="button transport-button" disabled>■ <span>Stop</span><kbd>S</kbd></button>
+            <button id="record-button" class="button record-button" disabled>● <span>Record</span><kbd>R</kbd></button>
+            <button id="redo-button" class="button" disabled title="Record another take">↻ Redo take</button>
+            <button id="save-button" class="button primary save-button" disabled>Save take <kbd>⌘S</kbd></button>
+          </div>
+          <div class="timeline-actions">
+            <span id="current-time" class="time-readout">00:00.00</span><span class="time-separator">/</span><span id="duration" class="time-readout">00:00.00</span>
+            <button id="split-button" class="button compact-button" type="button" disabled>Split at playhead</button>
+            <button id="snap-button" class="button compact-button active" type="button" aria-pressed="true">Snap</button>
+            <button id="zoom-out" class="button zoom-button" type="button" title="Zoom out">−</button>
+            <button id="zoom-fit" class="button compact-button" type="button">Fit</button>
+            <button id="zoom-in" class="button zoom-button" type="button" title="Zoom in">+</button>
+            <span id="zoom-label" class="zoom-label">100%</span>
+          </div>
+        </div>
+
+        <div id="drop-hint" class="drop-hint"><strong>Drop audio into the timeline</strong><span>Clips stack on new lanes. Drag to move, grab edges to trim, or use the selected clip controls below.</span></div>
+        <div id="timeline-scroll" class="timeline-scroll" tabindex="0" aria-label="Audio timeline">
+          <div id="timeline-content" class="timeline-content">
+            <canvas id="waveform" aria-label="Audio waveform timeline"></canvas>
+            <div id="waveform-empty" class="waveform-empty">Select a source to begin editing.</div>
+          </div>
+        </div>
+        <div class="timeline-footer">
+          <div class="lane-legend"><span class="legend-dot source"></span>Source <span class="legend-dot take"></span>Takes <span class="legend-dot clip"></span>Clips</div>
+          <div class="recording-status"><span id="status-dot" class="status-dot"></span><span id="status-text">Ready</span></div>
+        </div>
+
+        <audio id="audio-player" controls preload="metadata"></audio>
+      </section>
+    </section>
+
+    <footer><span>Shortcuts: <kbd>Space</kbd> play · <kbd>R</kbd> record · <kbd>S</kbd> stop · <kbd>X</kbd> split · <kbd>⌘/Ctrl+Z</kbd> undo · <kbd>⌘/Ctrl+Shift+Z</kbd> redo</span><span id="ffmpeg-note">Exports preserve the selected file's format.</span></footer>
+  </main>
+  <script src="renderer.js"></script>
+</body>
+</html>

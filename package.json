@@ -1,0 +1,65 @@
+{
+  "name": "delta-voice-tool",
+  "version": "1.4.0",
+  "description": "A small cross-platform desktop app for replacing voice takes quickly.",
+  "author": "Delta Voice Tool",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "smoke": "node --check main.js && node --check preload.js && node --check renderer.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "build": {
+    "appId": "com.quickvoicetakes.app",
+    "productName": "Delta Voice Tool",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "styles.css",
+      "renderer.js",
+      "node_modules/ffmpeg-static/**"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/ffmpeg.exe",
+        "to": "ffmpeg.exe"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "allowScripts": {
+    "electron@31.7.7": true
+  }
+}
