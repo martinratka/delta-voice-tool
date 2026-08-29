@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('voiceTakes', Object.freeze({
   loadDroppedAudio: (filePath) => invoke('load-dropped-audio', { filePath }),
   saveRecordingTemp: (data, extension) => invoke('save-recording-temp', { data, extension }),
   discardRecordingTemp: (tempPath) => invoke('discard-recording-temp', { tempPath }),
-  saveTake: (sourcePath, tempPath) => invoke('save-take', { sourcePath, tempPath })
+  saveTake: (sourcePath, tempPath) => invoke('save-take', { sourcePath, tempPath }),
+  checkForUpdates: () => invoke('check-for-updates')
 }));

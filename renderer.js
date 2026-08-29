@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
 
 const chooseFolderButton = $('choose-folder');
+const checkUpdatesButton = $('check-updates');
 const recursiveToggle = $('recursive-toggle');
 const microphoneSelect = $('microphone');
 const themeSelect = $('theme-select');
@@ -161,7 +162,7 @@ function persistSavedFiles() {
 }
 
 function applyTheme(theme) {
-  const allowedThemes = new Set(['midnight', 'ocean', 'plum', 'forest', 'sunset', 'synthwave', 'rose', 'slate', 'amber', 'high-contrast', 'light']);
+  const allowedThemes = new Set(['midnight', 'ocean', 'plum', 'forest', 'sunset', 'synthwave', 'rose', 'slate', 'amber', 'terminal', 'lavender', 'copper', 'arctic', 'candy', 'high-contrast', 'light']);
   const selectedTheme = allowedThemes.has(theme) ? theme : 'midnight';
   document.documentElement.dataset.theme = selectedTheme;
   themeSelect.value = selectedTheme;
@@ -1270,6 +1271,18 @@ zoomOutButton.addEventListener('click', () => { zoom = Math.max(MIN_ZOOM, zoom /
 zoomInButton.addEventListener('click', () => { zoom = Math.min(MAX_ZOOM, zoom * 1.25); drawTimeline(); persistProject(); });
 zoomFitButton.addEventListener('click', () => { zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, (timelineScroll.clientWidth - 140) / Math.max(1, timelineDuration() * BASE_PIXELS_PER_SECOND))); drawTimeline(); persistProject(); });
 chooseFolderButton.addEventListener('click', chooseFolder);
+checkUpdatesButton.addEventListener('click', async () => {
+  checkUpdatesButton.disabled = true;
+  showMessage('Checking for updates…');
+  try {
+    const result = await window.voiceTakes.checkForUpdates();
+    if (!result.available) showMessage('You are running the latest version.', 'success');
+  } catch (error) {
+    showMessage(error.message || 'Could not check for updates.', 'error');
+  } finally {
+    checkUpdatesButton.disabled = false;
+  }
+});
 recursiveToggle.addEventListener('change', () => { writeState({ recursive: recursiveToggle.checked }); refreshFiles(); });
 fileSearch.addEventListener('input', () => { renderFiles(); writeState({ search: fileSearch.value }); });
 fileSort.addEventListener('change', () => {

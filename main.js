@@ -27,6 +27,7 @@ let mainWindow;
 let activeFolder = null;
 let temporaryDirectory;
 let updatePromptOpen = false;
+let updateAvailableVersion = null;
 
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = false;
@@ -39,6 +40,7 @@ function checkForUpdates() {
 }
 
 autoUpdater.on('update-available', async (info) => {
+  updateAvailableVersion = info.version;
   if (updatePromptOpen) return;
   updatePromptOpen = true;
   try {
@@ -177,6 +179,13 @@ async function createWindow() {
 }
 
 function registerIpc() {
+  ipcMain.handle('check-for-updates', async () => {
+    if (!app.isPackaged) return { available: false, development: true };
+    updateAvailableVersion = null;
+    await autoUpdater.checkForUpdates();
+    return { available: Boolean(updateAvailableVersion), version: updateAvailableVersion };
+  });
+
   ipcMain.handle('select-folder', async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
       title: 'Choose an audio folder',
