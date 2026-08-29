@@ -14,8 +14,6 @@ const savedCount = $('saved-count');
 const fileSearch = $('file-search');
 const fileSort = $('file-sort');
 const markModeButton = $('mark-mode');
-const markVisibleButton = $('mark-visible');
-const clearVisibleButton = $('clear-visible');
 const quickModeToggle = $('quick-mode-toggle');
 const autoSaveToggle = $('auto-save-toggle');
 const autoSaveToggleWrap = $('auto-save-toggle-wrap');
@@ -82,6 +80,8 @@ let activeFolder = null;
 let files = [];
 let sortMode = 'name';
 let markMode = false;
+let markDrag = null;
+let suppressMarkClick = false;
 let selectedFile = null;
 const savedFiles = new Set();
 let recording = null;
@@ -540,14 +540,19 @@ function getVisibleFiles() {
   return query ? files.filter((file) => file.relativePath.toLocaleLowerCase().includes(query)) : files;
 }
 
+function updateMarkedItem(button, file, marked) {
+  if (marked) savedFiles.add(file.path);
+  else savedFiles.delete(file.path);
+  button.classList.toggle('saved', marked);
+  button.setAttribute('aria-label', `${file.relativePath}, ${marked ? 'saved' : 'not changed'}`);
+}
+
 function renderFiles() {
   const query = fileSearch.value.trim().toLocaleLowerCase();
   const visibleFiles = getVisibleFiles();
   const overwrittenCount = files.reduce((count, file) => count + (savedFiles.has(file.path) ? 1 : 0), 0);
   fileCount.textContent = query ? `${visibleFiles.length}/${files.length}` : files.length;
   savedCount.textContent = `${overwrittenCount}/${files.length}`;
-  markVisibleButton.disabled = !visibleFiles.length;
-  clearVisibleButton.disabled = !visibleFiles.length;
   fileList.replaceChildren();
   if (!visibleFiles.length) {
     fileList.className = 'file-list empty-state';
@@ -568,14 +573,28 @@ function renderFiles() {
     format.className = 'file-format';
     format.textContent = file.format;
     button.append(name, format);
+    button.addEventListener('pointerdown', (event) => {
+      if (!markMode || event.button !== 0) return;
+      markDrag = { target: !savedFiles.has(file.path), moved: false };
+      updateMarkedItem(button, file, markDrag.target);
+      event.preventDefault();
+    });
+    button.addEventListener('pointerenter', () => {
+      if (!markMode || !markDrag) return;
+      markDrag.moved = true;
+      updateMarkedItem(button, file, markDrag.target);
+    });
     button.addEventListener('click', () => {
-      if (markMode) {
-        if (savedFiles.has(file.path)) savedFiles.delete(file.path);
-        else savedFiles.add(file.path);
-        persistSavedFiles();
-        renderFiles();
+      if (markMode && suppressMarkClick) {
+        suppressMarkClick = false;
         return;
       }
+      if (markMode) {
+        updateMarkedItem(button, file, !savedFiles.has(file.path));
+        persistSavedFiles();
+        return;
+      }
+      if (markMode) return;
       selectFile(file);
     });
     fileList.append(button);
@@ -1381,24 +1400,19 @@ fileSort.addEventListener('change', () => {
   writeState({ sortMode });
   renderFiles();
 });
-markVisibleButton.addEventListener('click', () => {
-  const visibleFiles = getVisibleFiles();
-  visibleFiles.forEach((file) => savedFiles.add(file.path));
-  persistSavedFiles();
-  renderFiles();
-  showMessage(`Marked ${visibleFiles.length} visible file${visibleFiles.length === 1 ? '' : 's'}.`, 'success');
-});
-clearVisibleButton.addEventListener('click', () => {
-  const visibleFiles = getVisibleFiles();
-  visibleFiles.forEach((file) => savedFiles.delete(file.path));
-  persistSavedFiles();
-  renderFiles();
-  showMessage(`Cleared marks from ${visibleFiles.length} visible file${visibleFiles.length === 1 ? '' : 's'}.`, 'success');
-});
 markModeButton.addEventListener('click', () => {
   markMode = !markMode;
   markModeButton.classList.toggle('active', markMode);
   markModeButton.setAttribute('aria-pressed', String(markMode));
+  if (!markMode) markDrag = null;
+});
+document.addEventListener('pointerup', () => {
+  if (!markDrag) return;
+  suppressMarkClick = markDrag.moved;
+  persistSavedFiles();
+  markDrag = null;
+  renderFiles();
+  if (suppressMarkClick) setTimeout(() => { suppressMarkClick = false; }, 0);
 });
 timelineScroll.addEventListener('scroll', () => { persistProject(); });
 audioPlayer.addEventListener('play', () => { playButton.querySelector('span').textContent = 'Pause'; updatePlayhead(); });
